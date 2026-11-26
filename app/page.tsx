@@ -62,7 +62,12 @@ export default function App() {
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
 
+  const [query, setQuery] = useState("");
+
   const selected = recipes.find((r) => r.id === selectedId);
+  const filteredRecipes = recipes.filter((r) =>
+    r.title.toLowerCase().includes(query.trim().toLowerCase()),
+  );
 
   async function loadRecipes() {
     try {
@@ -107,7 +112,7 @@ export default function App() {
 
   async function saveRecipe(e: any) {
     e.preventDefault();
-    if (form!.title.trim()) {
+    if (!form!.title.trim()) {
       setError("Give your recipe a title before saving.");
       return;
     }
@@ -156,8 +161,16 @@ export default function App() {
         <button className="btn primary" onClick={startNew}>
           New recipe
         </button>
+        <input
+          type="search"
+          className="search"
+          placeholder="Search by title"
+          aria-label="Search recipes by title"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
         <ul className="recipe-list">
-          {recipes.map((r) => (
+          {filteredRecipes.map((r) => (
             <li key={r.id}>
               <button
                 className={r.id === selectedId && !form ? "active" : ""}
@@ -173,6 +186,9 @@ export default function App() {
         </ul>
         {!loading && recipes.length === 0 && !error && (
           <p className="muted">No recipes yet. Add your first one.</p>
+        )}
+        {recipes.length > 0 && filteredRecipes.length === 0 && (
+          <p className="muted">No recipes match "{query.trim()}".</p>
         )}
       </aside>
 
@@ -265,7 +281,7 @@ export default function App() {
             <p className="servings">
               {selected.servings && (
                 <span>
-                  {selected.servings?.length < 2 ? "Serves " : ""}
+                  {selected.servings?.length < 4 ? "Serves " : ""}
                   {selected.servings}
                 </span>
               )}

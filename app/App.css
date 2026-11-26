@@ -54,6 +54,17 @@ body {
   margin: 0 0 1rem;
 }
 
+.search {
+  width: 100%;
+  margin-top: 0.75rem;
+  font: inherit;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.55rem 0.7rem;
+}
+
 .recipe-list {
   list-style: none;
   padding: 0;
@@ -225,6 +236,7 @@ h3 {
 
 button:focus-visible,
 input:focus-visible,
+.search:focus-visible,
 textarea:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
