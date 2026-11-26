@@ -124,7 +124,29 @@ h3 {
 }
 
 .ingredients {
-  padding-left: 1.2rem;
+  list-style: none;
+  padding: 0;
+}
+
+.ingredients label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.3rem 0;
+  cursor: pointer;
+}
+
+.ingredients input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+}
+
+.ingredients li.checked span {
+  text-decoration: line-through;
+  color: var(--muted);
 }
 
 .steps {

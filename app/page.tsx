@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import "./App.css";
+import { Recipe, RecipeForm } from "./types";
 
 const API = "http://localhost:3001/api/recipes";
 
-const emptyForm = {
+const emptyForm: RecipeForm = {
   title: "",
   description: "",
   servings: "",
@@ -15,19 +16,51 @@ const emptyForm = {
   notes: "",
 };
 
-const toLines = (text) =>
+const toLines = (text: string) =>
   text
     .split("\n")
-    .map((line) => line.trim())
+    .map((line: string) => line.trim())
     .filter(Boolean);
 
+// Checked state lives only in memory, so it resets on reload or when
+// a different recipe is selected (the parent gives this a key per recipe).
+function IngredientList({ items }: { items: string[] }) {
+  const [checked, setChecked] = useState(new Set());
+
+  function toggle(index: number) {
+    setChecked((prev) => {
+      const next = new Set(prev);
+      if (next.has(index)) next.delete(index);
+      else next.add(index);
+      return next;
+    });
+  }
+
+  return (
+    <ul className="ingredients">
+      {items.map((item, i) => (
+        <li key={i} className={checked.has(i) ? "checked" : ""}>
+          <label>
+            <input
+              type="checkbox"
+              checked={checked.has(i)}
+              onChange={() => toggle(i)}
+            />
+            <span>{item}</span>
+          </label>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export default function App() {
-  const [recipes, setRecipes] = useState([]);
-  const [selectedId, setSelectedId] = useState(null);
-  const [form, setForm] = useState(null); // null = not editing
-  const [editingId, setEditingId] = useState(null);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [form, setForm] = useState<RecipeForm | null>(null); // null = not editing
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [error, setError] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
 
   const selected = recipes.find((r) => r.id === selectedId);
 
@@ -54,7 +87,7 @@ export default function App() {
     setSelectedId(null);
   }
 
-  function startEdit(recipe) {
+  function startEdit(recipe: Recipe) {
     setEditingId(recipe.id);
     setForm({
       title: recipe.title,
@@ -72,16 +105,16 @@ export default function App() {
     setEditingId(null);
   }
 
-  async function saveRecipe(e) {
+  async function saveRecipe(e: any) {
     e.preventDefault();
-    if (!form.title.trim()) {
+    if (form!.title.trim()) {
       setError("Give your recipe a title before saving.");
       return;
     }
     const body = {
       ...form,
-      ingredients: toLines(form.ingredients),
-      steps: toLines(form.steps),
+      ingredients: toLines(form!.ingredients),
+      steps: toLines(form!.steps),
     };
     try {
       const res = await fetch(editingId ? `${API}/${editingId}` : API, {
@@ -100,7 +133,7 @@ export default function App() {
     }
   }
 
-  async function deleteRecipe(id) {
+  async function deleteRecipe(id: string) {
     if (!window.confirm("Delete this recipe? This can't be undone.")) return;
     try {
       const res = await fetch(`${API}/${id}`, { method: "DELETE" });
@@ -112,7 +145,8 @@ export default function App() {
     }
   }
 
-  const setField = (name) => (e) =>
+  const setField = (name: string) => (e: { target: { value: any } }) =>
+    // @ts-ignore
     setForm((f) => ({ ...f, [name]: e.target.value }));
 
   return (
@@ -227,29 +261,37 @@ export default function App() {
             {selected.description && (
               <p className="lede">{selected.description}</p>
             )}
-            <p className="meta">
-              {selected.servings && <span>Serves {selected.servings}</span>}
+
+            <p className="servings">
+              {selected.servings && (
+                <span>
+                  {selected.servings?.length < 2 ? "Serves " : ""}
+                  {selected.servings}
+                </span>
+              )}
+            </p>
+
+            <p className="time">
               {selected.time && <span>{selected.time}</span>}
             </p>
 
             <h3>Ingredients</h3>
-            <ul className="ingredients">
-              {selected.ingredients.map((item, i) => (
-                <li key={i}>{item}</li>
-              ))}
-            </ul>
+            <IngredientList key={selected.id} items={selected.ingredients} />
 
             <h3>Method</h3>
             <ol className="steps">
               {selected.steps.map((step, i) => (
-                <li key={i}>{step}</li>
+                // @ts-ignore this field is real
+                <li key={i} type="1">
+                  {step}
+                </li>
               ))}
             </ol>
 
             {selected.notes && (
               <>
                 <h3>Notes</h3>
-                <p className="lede">{selected.notes}</p>
+                <p>{selected.notes}</p>
               </>
             )}
 
